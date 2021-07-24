@@ -7,9 +7,8 @@ on:
 
 jobs:
   release:
-    name: Release CLI executables
+    name: Release sqlx-cli
     runs-on: ${{ matrix.os }}
-    if: startsWith(github.ref, 'refs/tags/')
 
     strategy:
       matrix:
@@ -25,6 +24,7 @@ jobs:
           - os: macos-latest
             target: x86_64-apple-darwin
             args: --features openssl-vendored
+      fail-fast: false
 
     steps:
       - uses: actions/checkout@v2
@@ -52,13 +52,12 @@ jobs:
 
       - name: Rename and strip executables
         run: |
-          # We're not using any arguments because --strip-unneeded is not
+          # We're not using any arguments here because --strip-unneeded is not
           # supported on macos
           strip target/release/${{ matrix.bin }}
           # Rename the executable to include the target triple
           mv target/release/${{ matrix.bin }} ${{ matrix.bin }}-${{ matrix.target }}${{ matrix.ext }}
 
-      # Upload artifacts to a release if this is a push to a tag
       - uses: softprops/action-gh-release@b7e450da2a4b4cb4bfbae528f788167786cfcedf
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
