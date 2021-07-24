@@ -143,65 +143,6 @@ jobs:
           name: cargo-sqlx-${{ matrix.target }}
           path: ${{ matrix.bin }}
 
-  release_cli:
-    name: Release CLI executables
-    runs-on: ${{ matrix.os }}
-    if: startsWith(github.ref, 'refs/tags/')
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest] #, macOS-latest]
-        include:
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-musl
-            args: --features openssl-vendored
-            bin: target/release/cargo-sqlx
-            ext: ''
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
-            bin: target/release/cargo-sqlx.exe
-            ext: '.exe'
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          target: ${{ matrix.target }}
-          override: true
-
-      - uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cli-${{ hashFiles('**/Cargo.lock') }}
-
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release --manifest-path sqlx-cli/Cargo.toml --bin cargo-sqlx ${{ matrix.args }}
-
-      - name: Rename and strip executable
-        run: |
-          # Rename the executable to include the target triple
-          mv ${{ matrix.bin }} cargo-sqlx-${{ matrix.target }}${{ matrix.ext }}
-          strip --strip-unneeded cargo-sqlx-${{ matrix.target }}${{ matrix.ext }}
-
-      # Upload artifacts to a release if this is a push to a tag
-      - uses: softprops/action-gh-release@b7e450da2a4b4cb4bfbae528f788167786cfcedf
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          files: cargo-sqlx-${{ matrix.target }}${{ matrix.ext }}
-
-      - uses: actions/upload-artifact@v2
-        with:
-          path: cargo-sqlx-${{ matrix.target }}${{ matrix.ext }}
-
   sqlite:
     name: SQLite
     runs-on: ubuntu-20.04
