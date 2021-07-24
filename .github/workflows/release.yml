@@ -54,9 +54,9 @@ jobs:
         run: |
           # We're not using any arguments here because --strip-unneeded is not
           # supported on macos
-          strip target/release/${{ matrix.bin }}
+          strip target/release/${{ matrix.bin }}${{ matrix.ext }}
           # Rename the executable to include the target triple
-          mv target/release/${{ matrix.bin }} ${{ matrix.bin }}-${{ matrix.target }}${{ matrix.ext }}
+          mv target/release/${{ matrix.bin }}${{ matrix.ext }} ${{ matrix.bin }}-${{ matrix.target }}${{ matrix.ext }}
 
       - uses: softprops/action-gh-release@b7e450da2a4b4cb4bfbae528f788167786cfcedf
         env:
