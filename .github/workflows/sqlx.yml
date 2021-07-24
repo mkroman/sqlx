@@ -156,11 +156,11 @@ jobs:
             target: x86_64-unknown-linux-musl
             args: --features openssl-vendored
             bin: target/release/cargo-sqlx
-            release_bin: cargo-sqlx-${{ matrix.target }}
+            ext: ''
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             bin: target/release/cargo-sqlx.exe
-            release_bin: cargo-sqlx-${{ matrix.target }}.exe
+            ext: '.exe'
 
     steps:
       - uses: actions/checkout@v2
@@ -188,19 +188,19 @@ jobs:
       - name: Rename and strip executable
         run: |
           # Rename the executable to include the target triple
-          mv ${{ matrix.bin }} ${{ matrix.release_bin }}
-          strip --strip-unneeded ${{ matrix.release_bin }}
+          mv ${{ matrix.bin }} cargo-sqlx-${{ matrix.target }}${{ matrix.ext }}
+          strip --strip-unneeded cargo-sqlx-${{ matrix.target }}${{ matrix.ext }}
 
       # Upload artifacts to a release if this is a push to a tag
       - uses: softprops/action-gh-release@b7e450da2a4b4cb4bfbae528f788167786cfcedf
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: ${{ matrix.release_bin }}
+          files: cargo-sqlx-${{ matrix.target }}${{ matrix.ext }}
 
       - uses: actions/upload-artifact@v2
         with:
-          path: ${{ matrix.release_bin }}
+          path: cargo-sqlx-${{ matrix.target }}${{ matrix.ext }}
 
   sqlite:
     name: SQLite
